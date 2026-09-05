@@ -66,11 +66,11 @@ managed_identities = {
 }
 
 # ------------------------------------------------------------------------------
-# 5. Storage Accounts & Blob Containers
+# 5. Storage Accounts & Blob Containers (Unique Random Numbers Added)
 # ------------------------------------------------------------------------------
 storage_accounts = {
   "sa1" = {
-    name                          = "axionprodsa01"
+    name                          = "axionprodsa582910"
     resource_group_name           = "rakesh-axion-prod-rg-01"
     location                      = "centralindia"
     account_tier                  = "Standard"
@@ -128,7 +128,7 @@ registries = {
 }
 
 # ------------------------------------------------------------------------------
-# 8. Azure Kubernetes Service (AKS) - Standard_D2as_v5
+# 8. Azure Kubernetes Service (AKS) - Standard_D2as_v5 & Greenfield AGIC
 # ------------------------------------------------------------------------------
 clusters = {
   "aks1" = {
@@ -143,6 +143,11 @@ clusters = {
 
     api_server_access_profile = {
       authorized_ip_ranges = ["122.161.50.13/32"]
+    }
+
+    ingress_application_gateway = {
+      gateway_name = "rakesh-axion-prod-appgw-01"
+      subnet_cidr  = "10.2.2.0/24"
     }
 
     key_vault_secrets_provider = {
