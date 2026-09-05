@@ -20,6 +20,16 @@ resource "azurerm_kubernetes_cluster" "aks" {
     }
   }
 
+  dynamic "ingress_application_gateway" {
+    for_each = each.value.ingress_application_gateway != null ? [each.value.ingress_application_gateway] : []
+    content {
+      gateway_id   = ingress_application_gateway.value.gateway_id
+      gateway_name = ingress_application_gateway.value.gateway_name
+      subnet_id    = ingress_application_gateway.value.subnet_id
+      subnet_cidr  = ingress_application_gateway.value.subnet_cidr
+    }
+  }
+
   default_node_pool {
     name            = each.value.default_node_pool.name
     node_count      = each.value.default_node_pool.node_count

@@ -118,7 +118,7 @@ variable "registries" {
 }
 
 variable "clusters" {
-  description = "Map of Azure Kubernetes Service (AKS) Clusters"
+  description = "Map of AKS clusters to create"
   type = map(object({
     name                         = string
     resource_group_name          = string
@@ -132,6 +132,13 @@ variable "clusters" {
 
     api_server_access_profile = optional(object({
       authorized_ip_ranges = optional(set(string), [])
+    }))
+
+    ingress_application_gateway = optional(object({
+      gateway_id   = optional(string)
+      gateway_name = optional(string)
+      subnet_id    = optional(string)
+      subnet_cidr  = optional(string)
     }))
 
     key_vault_secrets_provider = optional(object({

@@ -15,6 +15,13 @@ variable "clusters" {
       authorized_ip_ranges = optional(set(string), [])
     }))
 
+    ingress_application_gateway = optional(object({
+      gateway_id   = optional(string)
+      gateway_name = optional(string)
+      subnet_id    = optional(string)
+      subnet_cidr  = optional(string)
+    }))
+
     key_vault_secrets_provider = optional(object({
       secret_rotation_enabled  = optional(bool, true)
       secret_rotation_interval = optional(string, "2m")
