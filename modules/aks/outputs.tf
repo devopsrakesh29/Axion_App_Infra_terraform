@@ -2,10 +2,10 @@ output "clusters" {
   description = "Map of created AKS clusters"
   value = {
     for k, v in azurerm_kubernetes_cluster.aks : k => {
-      id                  = v.id
-      name                = v.name
-      kube_config_raw     = v.kube_config_raw
-      oidc_issuer_url     = v.oidc_issuer_url
+      id                    = v.id
+      name                  = v.name
+      kube_config_raw       = v.kube_config_raw
+      oidc_issuer_url       = v.oidc_issuer_url
       identity_principal_id = try(v.identity[0].principal_id, null)
     }
   }
