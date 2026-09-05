@@ -139,7 +139,7 @@ clusters = {
     subnet_name                 = "aks-axion-dev-subnet-01"
     vnet_name                   = "rakesh-axion-dev-vnet-01"
     user_assigned_identity_name = "rakesh-axion-dev-identity-01"
-    kubernetes_version          = "1.28"
+    kubernetes_version          = "1.34"
 
     api_server_access_profile = {
       authorized_ip_ranges = ["122.161.50.13/32"]
