@@ -142,7 +142,7 @@ clusters = {
     kubernetes_version          = "1.28"
 
     api_server_access_profile = {
-      authorized_ip_ranges = []
+      authorized_ip_ranges = ["122.161.50.13/32"]
     }
 
     key_vault_secrets_provider = {
