@@ -1,3 +1,10 @@
+# ==============================================================================
+# TERRAFORM INFRASTRUCTURE CI/CD PIPELINE WITH SCANNING, LINTING & COST ANALYSIS
+# ==============================================================================
+# This workflow performs automated code linting, security static analysis,
+# secret detection, cost estimation, and Terraform deployment to Azure.
+# ==============================================================================
+
 name: Terraform Infrastructure CI/CD Pipeline
 
 on:
@@ -16,6 +23,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  pull-requests: write
 
 env:
   ARM_CLIENT_ID: "7326c5fe-e0c6-4fb2-ad87-e6dd59b65521"
@@ -24,10 +32,16 @@ env:
   ARM_USE_OIDC: "true"
 
 jobs:
-  terraform:
-    name: Terraform Manual Deployment
+  # ----------------------------------------------------------------------------
+  # JOB 1: LINTING & SECURITY STATIC ANALYSIS (SAST)
+  # ----------------------------------------------------------------------------
+  # Description: Validates Terraform formatting with `terraform fmt`, checks
+  # best practices using `tflint`, and scans for security misconfigurations
+  # using `checkov`.
+  # ----------------------------------------------------------------------------
+  lint-and-scan:
+    name: Terraform Linting & Security Scan
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository Code
         uses: actions/checkout@v4
@@ -37,15 +51,98 @@ jobs:
         with:
           terraform_version: "1.5.7"
 
-      - name: Azure OIDC Login
+      - name: 1. Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.50.0
+
+      - name: 2. Run TFLint
+        run: |
+          tflint --init
+          tflint -f compact
+
+      - name: 3. Run Checkov Security SAST Scanner
+        uses: bridgecrewio/checkov-action@master
+        with:
+          framework: terraform
+          output_format: cli
+          soft_fail: true
+
+  # ----------------------------------------------------------------------------
+  # JOB 2: SECRETS SCANNING
+  # ----------------------------------------------------------------------------
+  # Description: Uses Gitleaks to inspect repository code and commit history for
+  # hardcoded passwords, API keys, Azure client secrets, and sensitive credentials.
+  # ----------------------------------------------------------------------------
+  secret-scan:
+    name: Secret Leak Detection (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks Secret Scanner
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ----------------------------------------------------------------------------
+  # JOB 3: INFRACOST ESTIMATION
+  # ----------------------------------------------------------------------------
+  # Description: Calculates estimated monthly cloud expenditure for the target
+  # environment prior to provisioning resources.
+  # ----------------------------------------------------------------------------
+  infracost:
+    name: Cloud Cost Estimation (Infracost)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: Setup Infracost CLI
+        uses: infracost/actions/setup@v3
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
+
+      - name: Generate Infracost Breakdown
+        working-directory: ./environments/${{ github.event.inputs.environment }}
+        run: |
+          if [ -n "${{ secrets.INFRACOST_API_KEY }}" ]; then
+            infracost breakdown --path=.
+          else
+            echo "::notice::INFRACOST_API_KEY secret not configured. Skipping cost estimation breakdown."
+          fi
+
+  # ----------------------------------------------------------------------------
+  # JOB 4: TERRAFORM DEPLOYMENT
+  # ----------------------------------------------------------------------------
+  # Description: Runs Terraform Init, Validate, Plan, and Apply against Azure
+  # for the selected environment (dev, int, or prod) using Azure OIDC auth.
+  # ----------------------------------------------------------------------------
+  terraform-deploy:
+    name: Terraform Deployment
+    runs-on: ubuntu-latest
+    needs: [lint-and-scan, secret-scan]
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform CLI
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.7"
+
+      - name: Azure OIDC Authentication
         uses: azure/login@v2
         with:
           client-id: ${{ env.ARM_CLIENT_ID }}
           tenant-id: ${{ env.ARM_TENANT_ID }}
           subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
-
-      - name: Terraform Format Check
-        run: terraform fmt -check -recursive
 
       - name: Terraform Init
         working-directory: ./environments/${{ github.event.inputs.environment }}
