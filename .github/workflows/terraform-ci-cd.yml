@@ -69,7 +69,8 @@ jobs:
         with:
           framework: terraform
           output_format: cli
-          soft_fail: true
+          soft_fail: false
+          hard_fail_on: CRITICAL,HIGH
 
   # ----------------------------------------------------------------------------
   # JOB 2: SECRETS SCANNING
