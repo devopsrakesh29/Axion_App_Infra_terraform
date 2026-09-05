@@ -176,9 +176,9 @@ clusters = {
       network_plugin      = "azure"
       network_plugin_mode = "overlay"
       network_policy      = "azure"
-      pod_cidr            = "10.244.0.0/16"
-      service_cidr        = "10.0.0.0/16"
-      dns_service_ip      = "10.0.0.10"
+      pod_cidr            = "100.64.0.0/16"
+      service_cidr        = "172.16.0.0/16"
+      dns_service_ip      = "172.16.0.10"
       load_balancer_sku   = "standard"
     }
 
