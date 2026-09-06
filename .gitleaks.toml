@@ -1,0 +1,15 @@
+# ==============================================================================
+# GITLEAKS CONFIGURATION & ALLOWLIST
+# ==============================================================================
+# Specifies allowlists for non-secret Azure Client IDs and false positives.
+# ==============================================================================
+
+title = "Gitleaks Custom Configuration"
+
+[allowlist]
+description = "Allowlist Azure Client ID GUID and false positive API key rules"
+regexes = [
+  '''7326c5fe-e0c6-4fb2-ad87-e6dd59b65521''',
+  '''c39262c3-0cd7-4062-8ce0-f8f4c1901a65''',
+  '''b27f17ae-3823-4fb4-99e5-a1b53312cb1e''',
+]
